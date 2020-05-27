@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vue</title>
+</head>
+<body>
+<div id="app">
+    <h1>Datos del usuario</h1>
+    <dl>
+        <dt><i>Username:</i></dt>
+        <dd>{{ datosPerfil.username }}</dd>
+        <dt><i>Ciudad:</i></dt>
+        <dd>{{ datosPerfil.ciudad }}</dd>
+        <dt><i>País:</i></dt>
+        <dd>{{ datosPerfil.pais }}</dd>
+        <dt><i>Likes:</i></dt>
+        <dd>{{ datosPerfil.likes }}</dd>
+        <button @click="actualizarLikes">Añadir like</button>
+    </dl>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.3.4/vue.js"></script>
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+
+<script>
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+        apiKey: "AIzaSyBO4sXxGlpfszX_7JA82gjOhGdd8mxtRYc",
+        authDomain: "fir-juan-luis-calderon.firebaseapp.com",
+        databaseURL: "https://fir-juan-luis-calderon.firebaseio.com",
+        projectId: "fir-juan-luis-calderon",
+        storageBucket: "fir-juan-luis-calderon.appspot.com",
+        messagingSenderId: "578818004588",
+        appId: "1:578818004588:web:431b032e5059b3d0d96a49",
+        measurementId: "G-NKVD8K0LME"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Vue stuff
+    new Vue({
+        el: '#app',
+        created() {
+            db.ref('/perfiles').child('juanluiscalderon')
+                .on('value', snapshot => this.datosPerfil = snapshot.val());
+        },
+        data: {
+            datosPerfil: {},
+        },
+        methods: {
+            actualizarLikes() {
+                db.ref('/perfiles').child('juanluiscalderon').child('likes')
+                /*.update({
+                    'likes': this.datosPerfil.likes + 1
+                })*/
+                    .transaction(function (likesActuales) {
+                        return likesActuales + 1;
+                    }, function (error, commited, snapshot) {
+                        if (error) {
+                            console.error(error);
+                        } else if (!commited) {
+                            console.warn('Transacción no realizada');
+                        } else {
+                            console.info('Transacción realizada');
+                            console.log(snapshot.val());
+                        }
+                    });
+            }
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vue</title>
+</head>
+<body>
+<div id="app">
+    <form @submit.prevent="enviarMensaje">
+        <textarea v-model="mensaje" cols="30" rows="10"></textarea>
+        <br>
+        <input type="submit" value="Enviar mensaje">
+    </form>
+    <hr>
+    <h1>Mensajes</h1>
+    <ul>
+        <li v-for="mensaje in mensajes">
+            {{ mensaje.mensaje}}
+            <small><i>({{ mensaje.username }})</i></small>
+        </li>
+    </ul>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.3.4/vue.js"></script>
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+
+<script>
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+        apiKey: "AIzaSyBO4sXxGlpfszX_7JA82gjOhGdd8mxtRYc",
+        authDomain: "fir-juan-luis-calderon.firebaseapp.com",
+        databaseURL: "https://fir-juan-luis-calderon.firebaseio.com",
+        projectId: "fir-juan-luis-calderon",
+        storageBucket: "fir-juan-luis-calderon.appspot.com",
+        messagingSenderId: "578818004588",
+        appId: "1:578818004588:web:431b032e5059b3d0d96a49",
+        measurementId: "G-NKVD8K0LME"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Vue stuff
+    new Vue({
+        el: '#app',
+        created() {
+            db.ref('/chats')
+                .on('value', snapshot => this.cargarMensajes(snapshot.val()))
+        },
+        data: {
+            mensaje: null,
+            username: 'juanluiscalderon',
+            mensajes: [],
+        },
+        methods: {
+            cargarMensajes(mensajes) {
+                this.mensajes = [];
+                for (let key in mensajes) {
+                    this.mensajes.push({
+                        mensaje: mensajes[key].mensaje,
+                        username: mensajes[key].username,
+                    });
+                }
+                this.mensajes.reverse();
+            },
+            enviarMensaje() {
+                db.ref('/chats')
+                    .push({
+                        mensaje: this.mensaje,
+                        username: this.username,
+                    })
+                    .then((data) => {
+                        this.mensaje = '';
+                        console.log(data.key);
+                    });
+            }
+        }
+    });
+</script>
+</body>
+</html>
